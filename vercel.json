@@ -1,0 +1,11 @@
+{
+  "build": {
+    "env": {
+      "DJANGO_SETTINGS_MODULE": "config.settings.production",
+      "DJANGO_SECRET_KEY": "oCjbo3qkvZfn0ay-gPEd4kk2Z_C7FNvRXvHiLjkPOWSsGk8NkHgB4anOoGgtX29-mQo",
+      "DJANGO_ALLOWED_HOSTS": "projet-final.vercel.app",
+      "DJANGO_CSRF_TRUSTED_ORIGINS": "https://projet-final.vercel.app",
+      "DATABASE_URL": "postgresql://neondb_owner:npg_LdKU1n6rRDBQ@ep-quiet-sun-za1n8s6e-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    }
+  }
+}
