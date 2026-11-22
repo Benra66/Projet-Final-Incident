@@ -1,9 +1,11 @@
 from io import StringIO
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.core.management import call_command, CommandError
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from incidents.models import Incident
+from incidents.forms import IncidentWorkflowForm
+from incidents.models import Incident, IncidentAuditEvent, IncidentComment
 
 class IncidentSecurityTests(TestCase):
     @classmethod
@@ -51,9 +53,15 @@ class IncidentSecurityTests(TestCase):
         self.assertEqual(obj.created_by, self.alice)
         self.assertRedirects(response, reverse("incidents:detail", args=[obj.pk]))
 
-    def test_invalid_and_overlong_input_is_rejected_without_writing(self):
+    def test_short_input_is_accepted_without_a_minimum_length_rule(self):
         self.client.force_login(self.alice)
-        for title, description in [("a", "short"), ("x" * 151, "Valid description text"), ("Valid title", "x" * 5001)]:
+        response = self.client.post(reverse("incidents:create"), {"title": "a", "description": "x"})
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Incident.objects.filter(title="a", description="x", created_by=self.alice).exists())
+
+    def test_overlong_input_is_rejected_without_writing(self):
+        self.client.force_login(self.alice)
+        for title, description in [("x" * 2001, "Valid description text"), ("Valid title", "x" * 5001)]:
             before = Incident.objects.count()
             response = self.client.post(reverse("incidents:create"), {"title": title, "description": description})
             self.assertEqual(response.status_code, 200)
@@ -111,6 +119,110 @@ class IncidentSecurityTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/admin/login/", response.headers["Location"])
 
+    def test_application_admin_sees_all_incidents(self):
+        admin_user = get_user_model().objects.create_user(username="incident-admin", password="test-password-only", is_staff=True)
+        group, _ = Group.objects.get_or_create(name="Incident administrators")
+        admin_user.groups.add(group)
+        group.permissions.add(
+            Permission.objects.get(content_type__app_label="incidents", codename="view_all_incidents"),
+            Permission.objects.get(content_type__app_label="incidents", codename="view_incident"),
+            Permission.objects.get(content_type__app_label="incidents", codename="delete_incident"),
+        )
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse("incidents:list"))
+        self.assertContains(response, "Alice private report")
+        self.assertContains(response, "Bob private report")
+        self.assertEqual(response.context["paginator"].count, 2)
+
+    def test_reporter_cannot_delete_an_incident(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("incidents:delete", args=[self.alice_incident.pk]))
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(Incident.objects.filter(pk=self.alice_incident.pk).exists())
+
+    def test_admin_delete_is_post_only_and_keeps_audit_event(self):
+        admin_user = get_user_model().objects.create_user(username="delete-admin", password="test-password-only", is_staff=True)
+        group, _ = Group.objects.get_or_create(name="Incident administrators")
+        admin_user.groups.add(group)
+        group.permissions.add(
+            Permission.objects.get(content_type__app_label="incidents", codename="view_all_incidents"),
+            Permission.objects.get(content_type__app_label="incidents", codename="delete_incident"),
+        )
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse("incidents:delete", args=[self.alice_incident.pk]))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse("incidents:delete", args=[self.alice_incident.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Incident.objects.filter(pk=self.alice_incident.pk).exists())
+        from incidents.models import IncidentAuditEvent
+        event = IncidentAuditEvent.objects.get(incident_reference=self.alice_incident.reference, action="deleted")
+        self.assertIsNone(event.incident)
+
+    def test_assigned_analyst_sees_only_assigned_and_owned_incidents(self):
+        analyst = get_user_model().objects.create_user(username="analyst", password="test-password-only")
+        group, _ = Group.objects.get_or_create(name="Incident analysts")
+        group.permissions.add(
+            Permission.objects.get(content_type__app_label="incidents", codename="view_assigned_incidents"),
+            Permission.objects.get(content_type__app_label="incidents", codename="view_incident"),
+        )
+        analyst.groups.add(group)
+        self.alice_incident.assigned_to = analyst
+        self.alice_incident.save()
+        self.client.force_login(analyst)
+        response = self.client.get(reverse("incidents:list"))
+        self.assertContains(response, "Alice private report")
+        self.assertNotContains(response, "Bob private report")
+
+    def test_admin_can_assign_only_active_analysts(self):
+        admin_user = get_user_model().objects.create_user(username="assign-admin", is_staff=True)
+        analyst = get_user_model().objects.create_user(username="active-analyst", is_active=True)
+        inactive_analyst = get_user_model().objects.create_user(username="inactive-analyst", is_active=False)
+        ordinary_user = get_user_model().objects.create_user(username="ordinary-user")
+        group, _ = Group.objects.get_or_create(name="Incident analysts")
+        group.permissions.add(Permission.objects.get(content_type__app_label="incidents", codename="view_assigned_incidents"))
+        group.user_set.add(analyst, inactive_analyst)
+        admin_group, _ = Group.objects.get_or_create(name="Incident administrators")
+        admin_group.permissions.add(Permission.objects.get(content_type__app_label="incidents", codename="assign_incident"))
+        admin_user.groups.add(admin_group)
+
+        form = IncidentWorkflowForm(user=admin_user)
+        assigned_ids = set(form.fields["assigned_to"].queryset.values_list("pk", flat=True))
+        self.assertEqual(assigned_ids, {analyst.pk})
+        self.assertNotIn(ordinary_user.pk, assigned_ids)
+
+    def test_homepage_contains_cv_and_login_link(self):
+        response = self.client.get(reverse("incidents:home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Benson Jean-Marc Arthur")
+        self.assertContains(response, reverse("login"))
+
+    def test_comment_is_escaped_and_audited_without_storing_body_in_metadata(self):
+        self.client.force_login(self.alice)
+        payload = "<script>comment()</script>"
+        response = self.client.post(reverse("incidents:comment", args=[self.alice_incident.pk]), {"body": payload})
+        self.assertEqual(response.status_code, 302)
+        detail = self.client.get(reverse("incidents:detail", args=[self.alice_incident.pk]))
+        self.assertNotContains(detail, payload)
+        self.assertContains(detail, "&lt;script&gt;")
+        comment = IncidentComment.objects.get(body=payload)
+        event = IncidentAuditEvent.objects.get(action="commented", actor=self.alice)
+        self.assertEqual(event.metadata, {"comment_id": comment.pk})
+
+    def test_status_transitions_are_validated(self):
+        incident = Incident.objects.get(pk=self.alice_incident.pk)
+        triage = IncidentWorkflowForm(data={"status": "in_progress", "severity": "high"}, instance=incident)
+        self.assertTrue(triage.is_valid(), triage.errors)
+        triage.save()
+        reopen = IncidentWorkflowForm(data={"status": "open", "severity": "high"}, instance=incident)
+        self.assertFalse(reopen.is_valid())
+        self.assertIn("status", reopen.errors)
+
+    def test_commenter_cannot_comment_on_another_reporters_incident(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("incidents:comment", args=[self.bob_incident.pk]), {"body": "Not authorized"})
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(IncidentComment.objects.filter(body="Not authorized").exists())
+
     @override_settings(DEBUG=True)
     def test_seed_is_idempotent_and_creates_no_accounts(self):
         for _ in range(2):
@@ -136,12 +248,20 @@ class SessionTests(TestCase):
         self.assertContains(response, "Check your username and password.")
         self.assertNotIn("_auth_user_id", self.client.session)
 
+    def test_repeated_invalid_logins_are_throttled(self):
+        responses = [
+            self.client.post(reverse("login"), {"username": "reporter", "password": "wrong"})
+            for _ in range(6)
+        ]
+        self.assertTrue(any(response.status_code == 429 for response in responses))
+
     def test_login_rotates_existing_session_key(self):
         session = self.client.session
         session["anonymous_note"] = "synthetic"
         session.save()
         old = session.session_key
-        self.assertTrue(self.client.login(username="reporter", password="test-password-only"))
+        response = self.client.post(reverse("login"), {"username": "reporter", "password": "test-password-only"})
+        self.assertEqual(response.status_code, 302)
         self.assertNotEqual(self.client.session.session_key, old)
         from django.contrib.sessions.models import Session
         self.assertFalse(Session.objects.filter(session_key=old).exists())

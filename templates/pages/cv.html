@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Benson Jean-Marc Arthur · CV{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/cv.css' %}">{% endblock %}
+{% block content %}
+<div class="cv-page" id="cv">
+  <section class="cv-hero" aria-labelledby="cv-name">
+    <div class="cv-avatar" aria-hidden="true">BJ</div>
+    <div class="cv-identity">
+      <p class="cv-kicker">CURRICULUM VITAE · ABIDJAN</p>
+      <h1 id="cv-name">Benson Jean-Marc Arthur</h1>
+      <p class="cv-role">Étudiant en Génie Informatique · Licence 2</p>
+      <p class="cv-school">Université Jésuite d’Abidjan · Systèmes et développement logiciel</p>
+      <div class="cv-tags"><span>Développement logiciel</span><span>Systèmes informatiques</span><span>Support utilisateur</span></div>
+    </div>
+    <div class="cv-actions"><button class="cv-print" type="button" data-print-cv>Imprimer / enregistrer en PDF</button><a class="cv-contact-button" href="mailto:bensonmarca@gmail.com">Me contacter</a></div>
+  </section>
+
+  <nav class="cv-quick-nav" aria-label="Sections du CV"><a href="#profil">Profil</a><a href="#experience">Expérience</a><a href="#formation">Formation</a><a href="#atouts">Certifications & langues</a></nav>
+
+  <div class="cv-grid">
+    <div class="cv-main-column">
+      <section class="cv-card cv-profile" id="profil">
+        <p class="cv-section-label">01 · PROFIL</p><h2>À propos</h2>
+        <p>Étudiant en Génie Informatique spécialisé en systèmes et logiciels. Je m’intéresse à l’optimisation des systèmes, à l’automatisation et au développement d’applications fiables.</p>
+      </section>
+
+      <section class="cv-card" id="experience">
+        <p class="cv-section-label">02 · TERRAIN</p><h2>Expérience professionnelle</h2>
+        <details class="cv-experience" open>
+          <summary><span><strong>Stagiaire · SODEMI</strong><small>Abidjan · En cours</small></span><span class="cv-expand" aria-hidden="true">+</span></summary>
+          <ul><li>Assistance aux utilisateurs et maintenance des postes de travail.</li><li>Mise en place d’un serveur d’impression et gestion des ressources partagées.</li></ul>
+        </details>
+      </section>
+
+      <section class="cv-card" id="formation">
+        <p class="cv-section-label">03 · PARCOURS</p><h2>Formation</h2>
+        <div class="cv-timeline">
+          <article><span class="cv-year">En cours</span><div><h3>Licence en Génie Informatique · L2</h3><p>Université Jésuite d’Abidjan</p></div></article>
+          <article><span class="cv-year">2022–2023</span><div><h3>Baccalauréat D</h3><p>Lycée Moderne de Cocody</p></div></article>
+        </div>
+      </section>
+
+      <section class="cv-card cv-project">
+        <p class="cv-section-label">PROJET ACADÉMIQUE</p><h2>Incident Desk</h2>
+        <p>Application Django de signalement d’incidents avec base PostgreSQL, déploiement cloud et contrôle des accès par rôle.</p>
+        <div class="cv-tags"><span>Python · Django</span><span>PostgreSQL</span><span>Sécurité applicative</span></div>
+      </section>
+    </div>
+
+    <aside class="cv-side-column" id="atouts">
+      <section class="cv-card cv-contact"><p class="cv-section-label">CONTACT</p><h2>Restons en lien</h2>
+        <a href="tel:+2250779423227"><span class="cv-contact-icon" aria-hidden="true">☎</span><span>+225 07 79 42 32 27</span></a>
+        <a href="mailto:bensonmarca@gmail.com"><span class="cv-contact-icon" aria-hidden="true">@</span><span>bensonmarca@gmail.com</span></a>
+        <a href="https://www.linkedin.com/in/benson" target="_blank" rel="noopener noreferrer"><span class="cv-contact-icon" aria-hidden="true">in</span><span>LinkedIn · /in/benson</span></a>
+        <p class="cv-location">Abidjan, Côte d’Ivoire</p>
+      </section>
+
+      <section class="cv-card"><p class="cv-section-label">CERTIFICATION</p><h2>ICDL</h2><p>2024 · Outils bureautiques et productivité</p></section>
+
+      <section class="cv-card"><p class="cv-section-label">LANGUES</p><h2>Communication</h2>
+        <div class="cv-language"><span>Français</span><strong>Natif</strong></div><div class="cv-language"><span>Anglais</span><strong>Moyen</strong></div>
+      </section>
+
+      <section class="cv-card"><p class="cv-section-label">CENTRES D’INTÉRÊT</p><h2>En dehors des écrans</h2><div class="cv-tags"><span>Basket</span><span>Football</span></div></section>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}<script src="{% static 'js/cv.js' %}" defer></script>{% endblock %}

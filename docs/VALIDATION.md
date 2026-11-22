@@ -1,33 +1,28 @@
-# Validation — 2026-10-25
+# Vérifications — 22 novembre 2026
 
-## Completed
+## Vérifié localement
 
-- Installed the exact Django 5.2.18 runtime dependency snapshot in a dedicated virtual environment.
-- Applied all Django and incident migrations to the course's local PostgreSQL container.
-- **23 tests passed** using isolated SQLite on macOS Python 3.13.2.
-- **23 tests passed** using PostgreSQL on macOS Python 3.13.2.
-- **23 tests passed** using PostgreSQL in Linux Python 3.12, including the platform-specific psycopg dependency resolution.
-- Verified anonymous access denial, owner-only list/detail, forged-owner input, validation limits, escaped script-shaped text, SQL-shaped input as data, missing/invalid-origin CSRF rejection, private-page headers, administrator access denial for normal users, local seeder restrictions, login/session rotation and POST/CSRF logout invalidation.
-- Production-settings tests verify required private configuration, PostgreSQL-only storage, secure cookies, explicit hosts and HTTPS origins.
-- `makemigrations --check --dry-run` found no missing model migrations.
-- `collectstatic` successfully collected the application stylesheet and Django admin assets.
-- Production `check --deploy` completed with **two intentionally retained warnings**: security.W005 (no includeSubDomains) and security.W021 (no preload). These reflect a cautious short initial HSTS rollout; no other checks were silenced.
-- Browser verified login, private register, creation/detail of a synthetic incident and logout. Saved actual screenshots in docs/images. Local preview used port 8765 because another service occupied 8000.
-- Compose/CI YAML, Python syntax and local documentation/image links checked.
+- `python manage.py makemigrations --check --dry-run --settings=config.settings.test` : aucune migration manquante.
+- `python manage.py check --settings=config.settings.test` : aucun problème Django.
+- `python manage.py test --settings=config.settings.test` : 41 tests passés, 5 tests de laboratoire SQL ignorés volontairement.
+- `python -m compileall -q config incidents` : syntaxe Python compilée sans erreur.
+- Bandit 1.9.4 (`bandit -q -r config incidents -x incidents/tests -ll`) : aucun résultat de sévérité moyenne/élevée.
+- Les configurations YAML de GitHub Actions et de ZAP se parsènt correctement.
+- L'application utilise SQLite isolé pour ces vérifications. Aucun test n'a visé Neon.
 
-The local database uses port 55432; an existing service occupied the originally considered 5433. No unrelated service was stopped. PostgreSQL image is pinned to its tested multi-platform digest.
+Relancer les deux premières commandes et la suite de tests après chaque modification. Le dépôt demande Python 3.12, tandis que l'environnement local de cette session est Python 3.10.11. `pip-audit` local ne peut pas résoudre `asgiref==3.13.0` sous Python 3.10; il faut son résultat dans le job CI Python 3.12 avant la mise en production.
 
-## Not yet verified externally
+## À vérifier dans le pipeline distant
 
-- No remote GitHub repository was created, code pushed, or GitHub Actions run triggered. The workflow is supplied and its commands were exercised locally; remote-run success is not claimed.
-- No Vercel account/project or hosted PostgreSQL database was created. Native Django entrypoint/static configuration follows official documentation, but a successful Vercel deployment is not claimed until the owner configures their accounts/environment and tests it.
-- No SAST/SCA/secrets/DAST pipeline is completed: these are explicit student milestones. Runtime package pins are not evidence of absence of known vulnerabilities.
-- Windows setup and browser mobile layouts need classroom verification.
+- Tests SQLite et PostgreSQL sur Python 3.12.
+- Bandit, pip-audit et Gitleaks sur tout l'historique.
+- ZAP authentifié contre l'application locale éphémère et récupération du rapport.
+- Protection de branche/environnement et déclenchement Vercel seulement après succès.
 
-## Distribution
+Ces jobs sont décrits dans `.github/workflows/pipeline.yml`, mais aucun résultat GitHub Actions ne peut être déclaré avant le push et l'exécution par GitHub. Gitleaks devrait détecter l'historique de configuration sensible connu jusqu'à sa révocation et son assainissement.
 
-Use scripts/package_starter.py to create a clean ZIP without local .env, .venv, databases, caches or generated staticfiles. The included screenshots show synthetic local records; no real credentials or personal incident information.
+## Vérification production requise
 
-## Added local SQL injection challenge
+La capture Vercel partagée précédemment montrait la version `38b0b32` à l'état `Ready`; elle ne démontre pas l'état actuel. Cette branche de travail n'a pas été déployée. La migration `0003` n'a pas été appliquée à Neon et les comptes du cours n'ont pas été provisionnés dans la base distante. Après mise à jour des secrets et déploiement, vérifier les scénarios de `docs/DEPLOYMENT.md` sans divulguer de valeurs de configuration.
 
-The synthetic baseline reproduced normal owner-only search, quote-triggered SQL error and injected disclosure of Bob's record as Alice. The explicit hardening suite failed in the two intended places. A temporary source copy with the owner-scoped ORM fix passed all five hardening tests; the distributed exercise remains deliberately vulnerable. The normal suite now reports 30 discovered tests: 25 pass and five opt-in challenge tests skip outside security_lab settings. Production/default URL isolation and refusal of insecure settings on Vercel are covered. No authenticated ZAP active scan has been run; scanner detection depends on scope, authentication and installed rules. The student ZIP omits the instructor's exact solution guide and every SQLite fixture file.
+La suite existante conserve cinq cas dans le profil de laboratoire SQL volontairement vulnérable; ils doivent rester isolés de toute base ou URL de production.

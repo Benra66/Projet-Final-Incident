@@ -1,0 +1,69 @@
+env:
+  contexts:
+    - name: incident-desk-local
+      urls:
+        - http://127.0.0.1:8000
+      includePaths:
+        - http://127\.0\.0\.1:8000/.*
+      excludePaths:
+        - http://127\.0\.0\.1:8000/admin/.*
+        - http://127\.0\.0\.1:8000/accounts/logout/.*
+        - http://127\.0\.0\.1:8000/incidents/.*/delete/.*
+      authentication:
+        method: browser
+        parameters:
+          loginPageUrl: http://127.0.0.1:8000/accounts/login/
+        verification:
+          method: autodetect
+      sessionManagement:
+        method: autodetect
+      users:
+        - name: zap-reporter
+          credentials:
+            username: ${DAST_USERNAME}
+            password: ${DAST_REPORTER_PASSWORD}
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    continueOnFailure: false
+    progressToStdout: true
+
+jobs:
+  - type: spider
+    parameters:
+      context: incident-desk-local
+      user: zap-reporter
+      maxDuration: 2
+      maxDepth: 6
+      maxChildren: 25
+      postForm: false
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 2
+
+  - type: activeScan
+    parameters:
+      context: incident-desk-local
+      user: zap-reporter
+      url: http://127.0.0.1:8000
+      defaultStrength: Low
+      defaultThreshold: Medium
+      maxRuleDurationInMins: 1
+      maxScanDurationInMins: 5
+      delayInMs: 100
+      threadPerHost: 2
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk/zap-reports
+      reportFile: security-scan.json
+      reportTitle: Incident Desk local DAST
+      reportDescription: Authenticated scan of the disposable local DAST database.
+      displayReport: false
+
+  - type: exitStatus
+    parameters:
+      errorLevel: High
+      warnLevel: Medium

@@ -16,10 +16,14 @@ env/
 local_settings.py
 db.sqlite3
 training.sqlite3
+dast.sqlite3
 media/
 
 # Environment variables (secrets)
 .env
+vercel.env
+telecharger/
+zap-reports/
 
 # VS Code
 .vscode/

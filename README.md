@@ -1,8 +1,8 @@
-# Incident Desk — Django Course Starter
+# Incident Desk — CV et gestion sécurisée des incidents
 
-A small, working incident-management application for an application-security capstone. Start with a safe private reporting workflow, push it to your personal GitHub repository, deploy it, and add functionality and security automation over six weeks.
+Application Django académique avec page CV publique, signalements privés, rôles déclarant/analyste/administrateur et pipeline de sécurité CI/CD. Le projet utilise PostgreSQL en production; les données de démonstration sont synthétiques.
 
-**Version 0:** login/logout, private incident creation/list/detail, administrator-managed accounts, migrations, synthetic local sample records, and automated security regression tests. No public registration, file uploads, email, analyst assignment, comments or status workflow yet.
+**Fonctions :** connexion/déconnexion protégées par CSRF, création de signalements, gravité et états avec transitions contrôlées, assignation, commentaires texte, journal d’audit, limitation des tentatives de connexion, rôles Django Groups/permissions et interface d’administration séparée.
 
 ![Incident Desk workspace](docs/images/workspace.png)
 
@@ -57,7 +57,7 @@ The database is exposed only on **127.0.0.1:55432**, to reduce clashes with exis
 
 Open http://127.0.0.1:8000/admin/ and sign in with your newly created superuser. Under Users, add a normal reporter account with a unique password and leave Staff status/Superuser status unchecked. Log out, then use http://127.0.0.1:8000/accounts/login/ as that reporter.
 
-The superuser is an administrative identity and can inspect records through Django admin; normal application views show only the signed-in user's own incidents, even if the user is staff. Administrative account management is a starting tool, not the future custom administrator role.
+The superuser can inspect all records through Django admin. For application roles, run `python manage.py configure_incident_roles --admin-username USER --analyst-username USER --reporter-username USER` after migrations. Reporters see their own incidents; analysts see incidents assigned to them; application administrators see all incidents and can delete them. Do not make ordinary reporters staff or superusers.
 
 Optional local sample records (in another terminal with the same environment):
 
@@ -72,13 +72,14 @@ This command creates two synthetic records once, creates no accounts/passwords, 
 1. Sign in as your reporter.
 2. Create an incident with a title and description using synthetic information.
 3. Open the report from the register.
-4. Create a second normal user through admin; verify their register does not show the first reporter's incident.
-5. Try the first report's URL as the second user: the expected result is 404.
-6. Log out using the button, which submits a CSRF-protected POST.
+4. Sign in as an analyst and assign a synthetic incident to that account; confirm it appears in the analyst register.
+5. Sign in as an application administrator; confirm the global register, workflow controls and delete confirmation.
+6. Try another reporter's incident URL as a normal reporter: the expected result is 404. Attempt a delete as that reporter: the expected result is 403.
+7. Add a plain-text comment and inspect the audit entry. Log out using the CSRF-protected POST button.
 
-Controls already present: Django authentication/password hashing, database sessions, session rotation on login, logout invalidation, CSRF middleware/form tokens, ORM queries, template autoescaping, server-selected ownership, owner-scoped queries, input limits, private-page no-store headers, and an application CSP.
+Controls include Django password hashing and sessions, session rotation, CSRF middleware/tokens, Axes login throttling, ORM queries, template autoescaping, server-assigned ownership, role-scoped querysets, transition validation, input limits, audit entries, private-page no-store headers and an application CSP.
 
-These are a foundation, not a production security certification. Login throttling, richer access policy, audit events and operational monitoring are student work. Do not use real incident/personal data in this course application.
+These controls are course evidence, not a production security certification. Use synthetic incident data only.
 
 ## 4. Run tests
 
@@ -97,7 +98,7 @@ python manage.py test --settings=config.settings.ci
 
 PostgreSQL test credentials need permission to create/drop a disposable test database; the local course DB user has this. Never run tests against production. `test` and `ci` settings intentionally use fast MD5 hashes only to speed isolated tests; they must never be selected for a deployment. Local/production use Django's normal password hashers.
 
-`.github/workflows/tests.yml` runs both test variants on pushes and pull requests. SAST, dependency/secret scanning and DAST are deliberately left as milestones in [docs/MILESTONES.md](docs/MILESTONES.md).
+`.github/workflows/pipeline.yml` runs SQLite and PostgreSQL tests, Bandit, pip-audit, Gitleaks and an authenticated ZAP scan against a disposable local SQLite app. A production deploy hook runs only after all jobs pass and a manual workflow dispatch. Configure the GitHub `production` environment and the `VERCEL_DEPLOY_HOOK` secret before using it.
 
 ## 5. Publish your code to GitHub
 
@@ -112,12 +113,12 @@ Follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The app is configured for Verce
 | Path | Purpose |
 |---|---|
 | config/settings/ | Local, production and isolated test settings |
-| incidents/models.py | The initial incident model |
-| incidents/forms.py | Explicit editable fields and validation |
-| incidents/views.py | Private list/detail and server-owned create |
+| incidents/models.py | Incident workflow, assignment, comments and audit events |
+| incidents/forms.py | Explicit editable fields and workflow validation |
+| incidents/views.py | Role-scoped list/detail/create/update/delete/comment views |
 | incidents/tests/ | Behavior, ownership, CSRF, sessions and deployment config tests |
 | templates/ and static/ | Server-rendered pages and local CSS |
-| docs/ | GitHub, deployment, teaching milestones, threat-model scaffold and validation |
+| docs/ | GitHub, deployment, role policy, teaching milestones, threat model and validation |
 
 For local shutdown use `docker compose stop`. Restart with `docker compose up -d --wait db`. `docker compose down` removes containers while retaining the database volume. **`docker compose down -v` deletes this project's database**, including accounts and reports: use it only for an intentional reset.
 

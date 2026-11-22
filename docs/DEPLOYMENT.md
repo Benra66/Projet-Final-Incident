@@ -20,7 +20,9 @@ Set environment variables explicitly:
 | DJANGO_ALLOWED_HOSTS | Exact hostnames, comma-separated, no scheme/path/wildcards |
 | DJANGO_CSRF_TRUSTED_ORIGINS | Exact https:// origins, comma-separated, no wildcard |
 
-Generate the secret with `python -c "import secrets; print(secrets.token_urlsafe(50))"` and copy it privately to Vercel. Never commit it. Different preview and production environments should have separate secrets/databases. The local .env is not uploaded.
+Set `DJANGO_SECRET_KEY` and `DATABASE_URL` in Vercel Project Settings → Environment Variables for Production (and separately for Preview if Preview is enabled). `vercel.json` contains only non-secret host/settings values. Never copy passwords or connection URLs into `vercel.json`, GitHub, a workflow command line, or a report. The local `telecharger/` folder is ignored by Git.
+
+Generate the key with `python -c "import secrets; print(secrets.token_urlsafe(50))"` and enter it privately in Vercel. Different preview and production environments should have separate keys/databases. The local `.env` is not uploaded.
 
 Production settings require these variables, refuse SQLite/wildcard hosts, use secure cookies and TLS database access. They trust X-Forwarded-Proto only behind the deployment platform's trusted proxy. Do not use this proxy trust configuration on an arbitrary directly exposed server.
 
@@ -39,13 +41,17 @@ python manage.py migrate --noinput
 python manage.py createsuperuser
 ```
 
+To provision the course accounts, set `INCIDENT_REPORTER_PASSWORD` and `INCIDENT_ADMIN_PASSWORD` in the trusted shell environment, then run `python manage.py provision_course_accounts`. This assigns a reporter role to `Nazairefabsimple` and a staff-but-not-superuser application administrator role to `Nazairefabadmin`. Never put these passwords in command arguments or source files. The command updates passwords whenever it is run.
+
 Review the database target before applying migrations. Never run the test suite or demo seeder against it. No default production administrator exists. Django's production security checks may warn about HSTS includeSubDomains and preload: both are deliberately disabled for a cautious initial rollout. Do not silence warnings without understanding them or enable preload casually. Begin with the short 300-second HSTS policy and choose a production policy after testing.
 
 The starter does **not** migrate during the build: preview builds must not race to change production schemas. In later milestones put migrations into a controlled release procedure, considering compatibility with old/new code and backups. Rollback of application code does not automatically reverse schema/data changes.
 
 ## 3. Deploy and smoke-test
 
-Deploy through the connected repository. Check build logs and record the commit. Verify:
+Set a Vercel Deploy Hook for the production branch and add its URL to GitHub Actions secrets as `VERCEL_DEPLOY_HOOK`. Configure the Vercel Git integration to skip direct production deployments; otherwise a direct push can deploy before the GitHub security pipeline finishes. The `CI and security release gate` workflow only calls the production hook on a manual dispatch after all jobs pass. Protect the GitHub `production` environment and require the test, SAST, dependency, secret-scan and DAST checks before the deploy step.
+
+Check build logs and record the deployed commit. Verify:
 
 - Login page and stylesheet load with HTTPS.
 - Your private administrator can create a normal course reporter.
@@ -61,7 +67,9 @@ This project contains deployment configuration, but a local test does not establ
 
 Do not point preview builds at production data. Use a separate test database/environment or restrict initial deployment to your stable main branch until isolation is configured. Vercel Git integration may deploy automatically before GitHub tests finish; a red test is not a deployment gate by itself.
 
-For the capstone, run ZAP against a disposable local app in GitHub Actions with synthetic records. Bound scanning scope, verify authenticated coverage, triage findings, then release deliberately. Students must document and test how failing checks prevent production release using their actual available plan/settings; do not assume paid deployment checks/protection are enabled on Hobby.
+The pipeline runs ZAP against a disposable local app with a synthetic account and records a JSON report. It scans only the local test app; never point this active scan at the production site.
+
+The repository has had production configuration values in its Git history. Removing them from the current `vercel.json` does not revoke them: rotate the Neon database password and Django signing key, update Vercel Production variables, and rewrite/remove the exposed Git history before claiming secret remediation. Gitleaks scans full history and will fail until the old values are removed. Do not suppress that finding with an allowlist.
 
 ## Troubleshooting
 
