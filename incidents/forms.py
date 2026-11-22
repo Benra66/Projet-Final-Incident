@@ -7,10 +7,21 @@ class IncidentForm(forms.ModelForm):
         # Ownership is never accepted from the browser.
         fields = ["title", "description"]
         widgets = {
-            "title": forms.TextInput(attrs={"placeholder": "A short, descriptive title", "autofocus": True}),
-            "description": forms.Textarea(attrs={"rows": 8, "placeholder": "What happened? Include synthetic details only."}),
+            "title": forms.TextInput(attrs={"placeholder": "Un titre court et descriptif", "autofocus": True}),
+            "description": forms.Textarea(attrs={"rows": 8, "placeholder": "Que s'est-il passé ?"}),
         }
         help_texts = {
-            "title": "3–150 characters.",
-            "description": "10–5,000 characters. Use plain text; do not enter passwords or personal data.",
+            "title": "",
+            "description": "Utilisez du texte brut ; n'entrez pas de mots de passe ni de données personnelles.",
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Supprimer toutes les validations de longueur minimale
+        self.fields["title"].min_length = None
+        self.fields["description"].min_length = None
+        self.fields["title"].required = False
+        self.fields["description"].required = False
+        # Vider les validateurs hérités du modèle
+        self.fields["title"].validators = []
+        self.fields["description"].validators = []
