@@ -4,81 +4,26 @@
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/cv.css' %}">{% endblock %}
 {% block content %}
 <div class="cv-page" id="cv">
-  <section class="cv-hero" aria-labelledby="cv-name">
-    <div class="cv-avatar" aria-hidden="true">BJ</div>
-    <div class="cv-identity">
-      <p class="cv-kicker">CURRICULUM VITAE · ABIDJAN</p>
-      <h1 id="cv-name">Benson Jean-Marc Arthur</h1>
-      <p class="cv-role">Étudiant en Génie Informatique · Licence 3</p>
-      <p class="cv-school">Université Jésuite d’Abidjan · Systèmes et développement logiciel</p>
-      <div class="cv-tags"><span>Développement logiciel</span><span>Systèmes informatiques</span><span>Support utilisateur</span></div>
-    </div>
-    <div class="cv-actions"><button class="cv-print" type="button" data-print-cv>Imprimer / enregistrer en PDF</button><a class="cv-contact-button" href="mailto:bensonmarca@gmail.com">Me contacter</a></div>
-  </section>
-
-  <nav class="cv-quick-nav" aria-label="Sections du CV"><a href="#profil">Profil</a><a href="#experience">Expérience</a><a href="#formation">Formation</a><a href="#atouts">Compétences & certifications</a></nav>
-
-  <div class="cv-grid">
-    <div class="cv-main-column">
-      <section class="cv-card cv-profile" id="profil">
-        <p class="cv-section-label">01 · PROFIL</p><h2>À propos</h2>
-        <p>Étudiant en Génie Informatique spécialisé en systèmes et logiciels. Je m’intéresse à l’optimisation des systèmes, à l’automatisation et au développement d’applications fiables.</p>
-      </section>
-
-      <section class="cv-card" id="experience">
-        <p class="cv-section-label">02 · TERRAIN</p><h2>Expérience professionnelle</h2>
-        <details class="cv-experience" open>
-          <summary><span><strong>Stagiaire · SODEMI</strong><small>Abidjan · Juin - Juillet 2025</small></span><span class="cv-expand" aria-hidden="true">+</span></summary>
-          <ul><li>Assistance aux utilisateurs et maintenance des postes de travail.</li><li>Mise en place d’un serveur d’impression et gestion des ressources partagées.</li></ul>
-        </details>
-        <details class="cv-experience" open>
-          <summary><span><strong>Stagiaire · EXPERTS ITN</strong><small>Abidjan · Août 2026</small></span><span class="cv-expand" aria-hidden="true">+</span></summary>
-          <ul><li>Conception du backend d’une application de gestion des patients avec OpenMRS.</li></ul>
-        </details>
-      </section>
-
-      <section class="cv-card" id="formation">
-        <p class="cv-section-label">03 · PARCOURS</p><h2>Formation</h2>
-        <div class="cv-timeline">
-          <article><span class="cv-year">En cours</span><div><h3>Licence en Génie Informatique · L3</h3><p>Université Jésuite d’Abidjan</p></div></article>
-          <article><span class="cv-year">2022–2023</span><div><h3>Baccalauréat D</h3><p>Lycée Moderne de Cocody</p></div></article>
-        </div>
-      </section>
-
-      <section class="cv-card cv-project">
-        <p class="cv-section-label">PROJET ACADÉMIQUE</p><h2>Incident Desk</h2>
-        <p>Application Django de signalement d’incidents avec base PostgreSQL, déploiement cloud et contrôle des accès par rôle.</p>
-        <div class="cv-tags"><span>Python · Django</span><span>PostgreSQL</span><span>Sécurité applicative</span></div>
-      </section>
-    </div>
-
-    <aside class="cv-side-column" id="atouts">
-      <section class="cv-card cv-contact"><p class="cv-section-label">CONTACT</p><h2>Restons en lien</h2>
-        <a href="tel:+2250779423227"><span class="cv-contact-icon" aria-hidden="true">☎</span><span>+225 07 79 42 32 27</span></a>
-        <a href="mailto:bensonmarca@gmail.com"><span class="cv-contact-icon" aria-hidden="true">@</span><span>bensonmarca@gmail.com</span></a>
-        <a href="https://www.linkedin.com/in/benson" target="_blank" rel="noopener noreferrer"><span class="cv-contact-icon" aria-hidden="true">in</span><span>LinkedIn · /in/benson</span></a>
-        <p class="cv-location">Abidjan, Côte d’Ivoire</p>
-      </section>
-
-      <section class="cv-card"><p class="cv-section-label">COMPÉTENCES TECHNIQUES</p><h2>Informatique</h2>
-        <p><strong>Langages :</strong> C, HTML, PHP, CSS, SQL</p>
-        <p><strong>Outils et technologies :</strong> GitHub, Git</p>
-        <p><strong>Support :</strong> notions de base de GLPI</p>
-      </section>
-
-      <section class="cv-card"><p class="cv-section-label">CERTIFICATIONS</p><h2>ICDL · Office 2016</h2>
-        <div class="cv-language"><span>Septembre 2024</span><strong>Computer & Online Essentials</strong></div>
-        <div class="cv-language"><span>Janvier 2025</span><strong>Applications Essentials</strong></div>
-        <div class="cv-language"><span>Janvier 2025</span><strong>Presentation</strong></div>
-        <div class="cv-language"><span>Février 2025</span><strong>Spreadsheets</strong></div>
-      </section>
-
-      <section class="cv-card"><p class="cv-section-label">LANGUES</p><h2>Communication</h2>
-        <div class="cv-language"><span>Français</span><strong>Natif</strong></div><div class="cv-language"><span>Anglais</span><strong>Moyen</strong></div>
-      </section>
-
-      <section class="cv-card"><p class="cv-section-label">CENTRES D’INTÉRÊT</p><h2>En dehors des écrans</h2><div class="cv-tags"><span>Basket</span><span>Football</span></div></section>
-    </aside>
+  <div class="cv-topline"><span class="cv-brand"><b>BJ</b> INCIDENT DESK</span><span>CURRICULUM VITAE <i>·</i> ABIDJAN</span></div>
+  <header class="cv-hero" aria-labelledby="cv-name">
+    <div class="cv-hero-copy"><p class="cv-kicker">SYSTÈMES <i>·</i> LOGICIELS <i>·</i> SUPPORT</p><h1 id="cv-name">Benson Jean-Marc<br>Arthur</h1><p class="cv-role">Étudiant en Génie Informatique · Licence 3 en cours</p><p class="cv-school">Université Jésuite d’Abidjan</p></div>
+    <div class="cv-hero-side"><span class="cv-monogram" aria-hidden="true">BJ</span><button class="cv-print" type="button" data-print-cv>Imprimer / enregistrer en PDF</button><a class="cv-contact-button" href="mailto:bensonmarca@gmail.com">Me contacter ↗</a></div>
+    <p class="cv-hero-index">01 <span>/</span> CV · 2026</p>
+  </header>
+  <nav class="cv-quick-nav" aria-label="Navigation du CV"><a href="#profil"><span>01</span> Profil ↘</a><a href="#experience"><span>02</span> Expérience ↘</a><a href="#formation"><span>03</span> Formation ↘</a><a href="#competences"><span>04</span> Compétences ↘</a><a href="#certifications"><span>05</span> Certifications ↘</a></nav>
+  <div class="cv-layout">
+    <section class="cv-panel cv-profile" id="profil"><p class="cv-label">01 — INTRODUCTION</p><h2>Systèmes, logiciels<br>& applications utiles.</h2><p>Étudiant en Génie Informatique intéressé par l’optimisation des systèmes, l’automatisation et le développement d’applications fiables.</p></section>
+    <section class="cv-panel cv-experiences" id="experience"><p class="cv-label">02 — CHRONOLOGIE <span>· CLIQUER POUR DÉPLIER</span></p><h2>Expériences professionnelles</h2><div class="cv-timeline">
+      <details class="cv-event"><summary><span class="cv-event-date">AOÛT 2026</span><span class="cv-event-title"><strong>EXPERTS ITN</strong><small>Stage · Conception backend</small></span><span class="cv-event-toggle" aria-hidden="true">+</span></summary><div class="cv-event-content"><p>Conception du backend d’une application de gestion des patients avec OpenMRS.</p></div></details>
+      <details class="cv-event"><summary><span class="cv-event-date">JUIN — JUILLET 2025</span><span class="cv-event-title"><strong>SODEMI</strong><small>Stage · Support informatique</small></span><span class="cv-event-toggle" aria-hidden="true">+</span></summary><div class="cv-event-content"><ul><li>Assistance aux utilisateurs et maintenance des postes de travail.</li><li>Mise en place d’un serveur d’impression et gestion des ressources partagées.</li></ul></div></details>
+    </div></section>
+    <section class="cv-panel cv-education" id="formation"><p class="cv-label">03 — ÉTUDES</p><h2>Formation</h2><div class="cv-study"><span>EN COURS</span><div><h3>Licence 3 · Génie Informatique</h3><p>Université Jésuite d’Abidjan</p></div></div><div class="cv-study"><span>2022—2023</span><div><h3>Baccalauréat D</h3><p>Lycée Moderne de Cocody</p></div></div></section>
+    <section class="cv-panel cv-skills" id="competences"><p class="cv-label">04 — SAVOIR-FAIRE <span>· OUVRIR UNE CATÉGORIE</span></p><h2>Compétences techniques</h2>
+      <details class="cv-skill"><summary><span>01</span> Langages <b>+</b></summary><div class="cv-chips"><span>C</span><span>HTML</span><span>PHP</span><span>CSS</span><span>SQL</span></div></details><details class="cv-skill"><summary><span>02</span> Outils & technologies <b>+</b></summary><div class="cv-chips"><span>GitHub</span><span>Git</span></div></details><details class="cv-skill"><summary><span>03</span> Support informatique <b>+</b></summary><div class="cv-chips"><span>Notions de base de GLPI</span></div></details>
+    </section>
+    <section class="cv-panel cv-certifications" id="certifications"><p class="cv-label">05 — CERTIFICATIONS ICDL</p><h2>Compétences numériques <span>OFFICE 2016</span></h2><div class="cv-cert-grid"><div class="cv-cert"><time>09 / 2024</time><strong>Computer & Online Essentials</strong><span>ICDL</span></div><div class="cv-cert"><time>01 / 2025</time><strong>Applications Essentials</strong><span>ICDL</span></div><div class="cv-cert"><time>01 / 2025</time><strong>Presentation</strong><span>ICDL</span></div><div class="cv-cert"><time>02 / 2025</time><strong>Spreadsheets</strong><span>ICDL</span></div></div></section>
+    <section class="cv-panel cv-project"><p class="cv-label">PROJET ACADÉMIQUE</p><h2>Incident Desk</h2><p>Application Django de signalement d’incidents avec base PostgreSQL, déploiement cloud et contrôle des accès par rôle.</p><div class="cv-chips"><span>Python · Django</span><span>PostgreSQL</span><span>Sécurité applicative</span></div></section>
+    <section class="cv-panel cv-contact"><p class="cv-label">CONTACT & LANGUES</p><h2>Restons en lien.</h2><a href="tel:+2250779423227">+225 07 79 42 32 27 ↗</a><a href="mailto:bensonmarca@gmail.com">bensonmarca@gmail.com ↗</a><a href="https://www.linkedin.com/in/benson" target="_blank" rel="noopener noreferrer">LinkedIn · /in/benson ↗</a><div class="cv-languages"><span>Français <b>Natif</b></span><span>Anglais <b>Moyen</b></span></div><p class="cv-location">Abidjan, Côte d’Ivoire · Basket · Football</p></section>
   </div>
 </div>
 {% endblock %}
