@@ -13,3 +13,5 @@
 .cv-quick-nav a{position:relative;top:0;cursor:pointer;box-shadow:0 4px 0 #c9d9e5,0 6px 12px rgba(31,73,108,.12);transition:top .15s ease,box-shadow .15s ease,transform .15s ease,color .15s ease,border-color .15s ease}.cv-quick-nav a:hover{top:-2px;border-color:#85b7d9;color:var(--cv-blue);box-shadow:0 6px 0 #b8cede,0 9px 16px rgba(31,73,108,.16);transform:translateY(-1px)}.cv-quick-nav a:active{top:3px;box-shadow:0 1px 0 #c9d9e5,0 2px 5px rgba(31,73,108,.12);transform:translateY(1px)}.cv-quick-nav a:focus-visible{outline:3px solid #188ab3;outline-offset:3px}
 .cv-page{font-family:"Times New Roman",Times,serif}
 #cv :where(p,li,a,small,span,strong,button){font-size:12px}
+#cv .cv-card p:not(.cv-section-label),#cv .cv-card li,#cv .cv-language,#cv .cv-contact>a{color:#263f57;line-height:1.9;letter-spacing:.08px}
+#cv .cv-section-label,#cv .cv-year{color:#075e83}
